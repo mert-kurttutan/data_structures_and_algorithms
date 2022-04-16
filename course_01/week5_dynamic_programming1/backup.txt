@@ -1,0 +1,98 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using std::vector;
+// Primitive Calculate problem: Reach a given input integer by the follow three operations
+// adddition by 1, multiplication by 2, multiplication 3
+// Find the sequence that gives minimum number of steps for this problemm.
+// Do this by using dynamical programming.
+
+
+
+vector<int> optimal_sequence(int n);
+vector<int> optimal_sequence_dp(int n, vector<vector<int>> & sequence_arr);
+
+int main() {
+  int n;
+  std::cin >> n;
+  vector<vector<int>> sequence_arr(n+1);
+  vector<int> sequence = optimal_sequence_dp(n, sequence_arr);
+  std::cout << sequence.size() - 1 << std::endl;
+  for (size_t i = 0; i < sequence.size(); ++i) {
+    std::cout << sequence[i] << " ";
+  }
+}
+
+
+vector<int> optimal_sequence(int n) {
+  std::vector<int> sequence;
+  while (n >= 1) {
+    sequence.push_back(n);
+    if (n % 3 == 0) {
+      n /= 3;
+    } else if (n % 2 == 0) {
+      n /= 2;
+    } else {
+      n = n - 1;
+    }
+  }
+  reverse(sequence.begin(), sequence.end());
+  return sequence;
+}
+
+
+vector<int> optimal_sequence_dp(int n, vector<vector<int>> & sequence_arr) {
+  
+  bool IsLast (vector<int> a) {
+    return (a.back()==n);
+  }
+  std::vector<vector<int>>::iterator it = std::find_if (sequence_arr.begin(), sequence_arr.end(), IsLast);
+
+  //if the sequence is found before
+  if (!sequence_arr[n].empty()){
+    return sequence_arr[n];
+  }
+
+  //base case
+  if (n==1){
+    sequence_arr[1].push_back(1);
+    return sequence_arr[1];
+  }
+  
+  //recursive step, measure their lengths, for determining minimal step
+  vector <int> vec1 = optimal_sequence_dp(n-1, sequence_arr);
+  vector <int> vec2;
+  vector <int> vec3;
+
+  int len1 = vec1.size();
+  int len3 = len1;         //wont be maximum unless they are changed below
+  int len2 = len1;
+
+  if (n % 3 == 0){
+    vec3 = optimal_sequence_dp(n/3, sequence_arr);
+    len3 = vec3.size();
+  }
+
+  if (n % 2 == 0){
+    vec2 = optimal_sequence_dp(n/2, sequence_arr);
+    len2 = vec2.size();
+  }
+
+  //dont use any package to pick the respective minimal vector
+  // do this  manually
+
+  if ((len2 < len1) && (len2 < len3)){
+    sequence_arr[n] = vec2;
+  }
+  else if((len3 < len2) && (len3 < len1)){
+    sequence_arr[n] = vec3;
+  }
+  else{
+    sequence_arr[n] = vec1;
+  }
+  
+  sequence_arr[n].push_back(n);
+
+  return sequence_arr[n];
+}
